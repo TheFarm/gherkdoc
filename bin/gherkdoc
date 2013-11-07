@@ -1,0 +1,76 @@
+#!env python2.7
+
+import os
+import sys
+
+from gherk_doc import Generator, find_features, bundled_template_path
+
+from behave.parser import ParserError
+from argparse import ArgumentParser, ArgumentTypeError
+
+
+def get_argument_parser():
+    def search_path(path):
+        if not os.path.exists(path):
+            raise ArgumentTypeError("search path %s does not exist" % path)
+
+        return (
+            'directory' if os.path.isdir(path) else 'file',
+            os.path.abspath(path)
+        )
+
+    def template_path(path):
+        if not os.path.exists(path):
+            raise ArgumentTypeError("template path %s does not exist" % path)
+
+        index_template_path = os.path.join(path, Generator.INDEX_TEMPLATE)
+
+        if not os.path.exists(index_template_path):
+            raise ArgumentTypeError("the template specified is missing the template file %s" % index_template_path)
+
+        return path
+
+
+    argparser = ArgumentParser(description="A tool that summarizes all features from a folder and outputs a nicely formatted document")
+
+    argparser.add_argument('search_paths', metavar='PATH', type=search_path, nargs='+',
+                           help='paths to search for feature files')
+
+    argparser.add_argument('--template', default=bundled_template_path, type=template_path,
+                           help='path to a custom document template')
+
+    argparser.add_argument('-o', '--output', default=os.path.join(os.getcwd(), 'output'),
+                           help='output path for documentation files')
+
+    argparser.add_argument('-p', '--project-title', required=True,
+                           help='projects documentation title')
+
+    return argparser
+
+if __name__ == '__main__':
+    arguments = get_argument_parser().parse_args()
+
+    generator = Generator(
+        arguments.project_title,
+        arguments.template
+    )
+
+    feature_files = []
+
+    for path_type, path in arguments.search_paths:
+        if path_type == 'directory':
+            for feature_file in find_features(path):
+                feature_files.append(feature_file)
+        else:
+            feature_files.append(path)
+
+    for feature_file in feature_files:
+        try:
+            generator.add_feature(feature_file)
+        except ParserError, e:
+            sys.stderr.write('%s\n' % e)
+        else:
+            sys.stdout.write("Added feature file %s\n" % feature_file)
+
+    generator.generate(arguments.output)
+

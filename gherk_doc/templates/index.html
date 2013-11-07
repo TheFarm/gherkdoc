@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{ project_name }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+
+    <!-- Fonts -->
+    <link href='http://fonts.googleapis.com/css?family=Droid+Sans:400,700|Droid+Serif|Droid+Sans+Mono' rel='stylesheet' type='text/css'>
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Application CSS -->
+    <link href="css/application.min.css" rel="stylesheet">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script gherk_doc="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script gherk_doc="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body data-spy="scroll" data-target=".sidebar-nav" data-offset="30">
+    <div class="container">
+      <div class="page-header">
+          <h1>{{ project_name }} <small></small></h1>
+      </div>
+      <div class="row">
+        <div class="col-md-3 hidden-print">
+          <div class="sidebar-nav" id="side-navigation" data-spy="affix" data-offset-top="119">
+            <ul class="nav">
+            {% for feature in features %}
+              <li {% if loop.first %}class="active"{% endif %}>
+                <a href="#{{ feature.name|slugify }}">{{ feature.name|e }}</a>
+
+                <ul class="nav">
+                {% for scenario in feature.scenarios %}
+                  <li {% if loop.first %}class="active"{% endif %}>
+                    <a href="#{{ feature.name|slugify }}-{{ scenario.name|slugify }}">{{ scenario.name|e }}</a>
+                  </li>
+                {% endfor %}
+                </ul>
+              </li>
+            {% endfor %}
+            </ul>
+          </div>
+        </div>
+
+        <div class="col-md-9">
+        {% for feature in features %}
+          <div class="feature">
+            <h2 id="{{ feature.name|slugify }}">{{ feature.name|e }}</h2>
+            <p class="lead">
+              {{ feature.description|join(' ')|capitalize|e }}
+            </p>
+
+          {% for scenario in feature.scenarios %}
+            <div class="panel panel-default scenario">
+              <div class="panel-heading">
+                  <h3 class="panel-title" id="{{ feature.name|slugify }}-{{ scenario.name|slugify }}">{{ scenario.name|e }}</h3>
+              </div>
+
+            {% for step in scenario.all_steps %}
+              <div class="panel-body">
+                  <strong>{{ step.keyword }}</strong> {{ step.name|e }}
+              </div>
+
+              {% if step.table %}
+                <div class="table-wrapper">
+                  <table class="table table-condenser table-hover">
+                    {% if step.table.headings %}
+                    <thead>
+                      <tr>
+                      {% for heading in step.table.headings %}
+                        <th>{{ heading|e }}</th>
+                      {% endfor %}
+                      </tr>
+                    </thead>
+                    {% endif %}
+
+                    {% for row in step.table %}
+                      <tr>
+                      {% for cell in row %}
+                        <td>{{ cell }}</td>
+                      {% endfor %}
+                      </tr>
+                    {% endfor %}
+
+                  </table>
+                </div>
+              {% endif %}
+
+            {% endfor %}
+            </div>
+          {% endfor %}
+          </div>
+
+        {% if not loop.last %}
+          <hr />
+        {% endif %}
+        {% endfor %}
+        </div>
+      </div>
+
+      <footer>
+        <h5>Generated at {{ generation_time }}</h5>
+      </footer>
+    </div>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://code.jquery.com/jquery.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="js/bootstrap.min.js"></script>
+    <!-- Include application specific scripts -->
+    <script src="js/application.min.js"></script>
+  </body>
+</html>

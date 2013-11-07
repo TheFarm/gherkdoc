@@ -34,3 +34,9 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+
+# Idea files
+.idea
+
+.DS_Store
+.Python
